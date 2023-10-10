@@ -21,12 +21,13 @@ function Login() {
         e.preventDefault()
 
         dispatch(loginUser(data)).then((result) => {
-            if (!result.payload.error) {
+            const payload = result.payload
+            if ('error' in payload) {
+                toast.error(result.payload.error)
+            } else {
                 setData({}) // reset fields
                 toast.success('You are successfully logged in')
                 navigate('/')
-            } else {
-                toast.error(result.payload.error)
             }
         })
     }

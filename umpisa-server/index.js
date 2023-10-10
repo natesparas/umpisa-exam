@@ -6,10 +6,23 @@ const { mongoose } = require('mongoose')
 const cookieParser = require('cookie-parser')
 
 // database connection
-mongoose
-    .connect(process.env.MONGO_URL)
-    .then(() => console.log('Database Connected'))
-    .catch((err) => console.log('Database not connected', err))
+// mongoose
+//     .connect(process.env.MONGO_URL)
+//     .then(() => console.log('Database Connected'))
+//     .catch((err) => console.log('Database not connected', err))
+
+mongoose.connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+
+mongoose.connection.on('connected', () => {
+    console.log('Connected to MongoDB')
+})
+
+mongoose.connection.on('error', (err) => {
+    console.error(`MongoDB connection error: ${err}`)
+})
 
 const app = express()
 
@@ -21,5 +34,5 @@ app.use(express.urlencoded({ extended: false }))
 app.use('/', require('./src/routes/authRoutes'))
 app.use('/', require('./src/routes/customer'))
 
-const PORT = 8000
+const PORT = 8085
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`))

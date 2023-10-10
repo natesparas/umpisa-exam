@@ -6,9 +6,9 @@ FROM node:18-alpine
 
 
 # Will create a directory app and switch to that directory
-WORKDIR /app
+WORKDIR /usr/src/app
 # Copies package.json file to /app directory
-COPY package*.json ./
+COPY package.json package-lock.json* ./
 # Runs npm install to create node_modules for your app
 RUN npm install --silent
 # Copies the source code to /app directory

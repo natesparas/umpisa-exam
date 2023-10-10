@@ -1,11 +1,13 @@
 FROM node:18-alpine
 
-WORKDIR /src
+# RUN mkdir -p /usr/src/app
+WORKDIR /app
 
-# Copying all the files in our project
+COPY package*.json ./
+
+RUN npm install --silent
+
 COPY . .
-
-RUN npm install
 
 EXPOSE 8085
 

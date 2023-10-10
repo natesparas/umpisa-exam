@@ -1,55 +1,65 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:6-jammy
-    ports:
-      - '27017:27017'
-    volumes:
-      - dbdata6:/data/db
-    networks:
-      - node-network
 
-  frontend:
-    build:
-      context: ./umpisa-client
-      dockerfile: Dockerfile
-    image: umpisa-client
-    container_name: umpisa-client
-    volumes:
-      - ./client/:/usr/app
-      - /usr/app/node_modules
-    depends_on:
-      - backend
-    ports:
-      - "5173:5173"
-    networks:
-      - node-network
-
-  backend:
+  server:
     build:
       context: ./umpisa-server
       dockerfile: Dockerfile
     image: umpisa-server
     container_name: umpisa-server
+    # command: npm start
     ports:
       - '8085:8085'
     depends_on:
       - mongodb
-    volumes:
-      # - .:/src
-      - ./client/:/usr/backend
-      - /usr/backend/node_modules
+    # volumes:
+    #   - ./server/:/usr/src/app
+    #   - /usr/src/app/node_modules
     networks:
-      - node-network
+      - app-network
+    environment:
+      MONGO_URL: mongodb://umpisa-mongo:27017/umpisa_db
 
-volumes:
-  data-volume:
-  node_modules:
-  dbdata6:
-  web-root:
-    driver: local
+  mongodb:
+    image: mongo:6-jammy
+    container_name: umpisa-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - data-volume:/data/db
+    networks:
+      - app-network
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: mongo_root
+    #   MONGO_INITDB_ROOT_PASSWORD: mongo_password
+
+  client:
+    build:
+      context: ./umpisa-client
+      dockerfile: Dockerfile
+    image: umpisa-client
+    container_name: umpisa-client
+    # volumes:
+    #   - ./client/:/usr/app
+    #   - /usr/app/node_modules
+    depends_on:
+      - server
+    ports:
+      - "5173:5173"
+    networks:
+      - app-network
+
+
 
 networks:
-  node-network:
+  app-network:
     driver: bridge
+
+volumes:
+    data-volume:
+    # node_modules:
+    web-root:
+      driver: local
+
+

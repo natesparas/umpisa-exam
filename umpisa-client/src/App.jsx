@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { logoutUser } from './store/userSlice.js'
 import Navbar from './components/navbar/Navbar.jsx'
 
-axios.defaults.baseURL = 'http://localhost:8000' // server address
+axios.defaults.baseURL = 'http://localhost:8085' // server address
 axios.defaults.withCredentials = true
 
 function App() {
@@ -25,7 +25,7 @@ function App() {
         e.preventDefault()
 
         dispatch(logoutUser()).then((result) => {
-            console.log(result.payload.error)
+            console.log(result)
         })
     }
 
