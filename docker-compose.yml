@@ -12,11 +12,10 @@ services:
 
   frontend:
     build:
-      context: ./umpisa-client2
+      context: ./umpisa-client
       dockerfile: Dockerfile
     image: umpisa-client
-    container_name: umpisa-react-client
-    command: npm run dev
+    container_name: umpisa-client
     volumes:
       - ./client/:/usr/app
       - /usr/app/node_modules
@@ -27,17 +26,22 @@ services:
     networks:
       - node-network
 
-    backend:
-      build: .
-      image: umpisa-server
-      ports:
-        - '8085:8085'
-      depends_on:
-        - mongodb
-      volumes:
-        - .:/src
-      networks:
-        - node-network
+  backend:
+    build:
+      context: ./umpisa-server
+      dockerfile: Dockerfile
+    image: umpisa-server
+    container_name: umpisa-server
+    ports:
+      - '8085:8085'
+    depends_on:
+      - mongodb
+    volumes:
+      # - .:/src
+      - ./client/:/usr/backend
+      - /usr/backend/node_modules
+    networks:
+      - node-network
 
 volumes:
   data-volume:
