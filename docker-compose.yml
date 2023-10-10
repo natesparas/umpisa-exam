@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6-jammy
+    ports:
+      - '27017:27017'
+    volumes:
+      - dbdata6:/data/db
+    networks:
+      - node-network
+
+  frontend:
+    build:
+      context: ./umpisa-client2
+      dockerfile: Dockerfile
+    image: umpisa-client
+    container_name: umpisa-react-client
+    command: npm run dev
+    volumes:
+      - ./client/:/usr/app
+      - /usr/app/node_modules
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    networks:
+      - node-network
+
+    backend:
+      build: .
+      image: umpisa-server
+      ports:
+        - '8085:8085'
+      depends_on:
+        - mongodb
+      volumes:
+        - .:/src
+      networks:
+        - node-network
+
+volumes:
+  data-volume:
+  node_modules:
+  dbdata6:
+  web-root:
+    driver: local
+
+networks:
+  node-network:
+    driver: bridge
