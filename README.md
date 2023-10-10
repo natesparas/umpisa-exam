@@ -1,1 +1,0 @@
-# umpisa-exam
