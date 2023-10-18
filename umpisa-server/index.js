@@ -5,6 +5,8 @@ const cors = require('cors')
 const { mongoose } = require('mongoose')
 const cookieParser = require('cookie-parser')
 
+const jwtValidation = require('./src/middlewares/jwtValidation')
+
 // database connection
 // mongoose
 //     .connect(process.env.MONGO_URL)
@@ -32,7 +34,7 @@ app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }))
 
 app.use('/', require('./src/routes/authRoutes'))
-app.use('/', require('./src/routes/customer'))
+app.use('/', jwtValidation, require('./src/routes/customer'))
 
 const PORT = 8085
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`))

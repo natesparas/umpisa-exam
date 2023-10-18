@@ -19,7 +19,11 @@ function Customer({ showDeleteAlert, reRender, showAddForm, modalAddTitle, reSho
                 const apiData = await getCustomer()
                 setData(apiData)
             } catch (error) {
-                console.log(error)
+                if (error.code == 'ERR_BAD_REQUEST') {
+                    toast.error(error.message)
+                } else {
+                    toast.error(error.message)
+                }
             }
         }
         fetchData()
