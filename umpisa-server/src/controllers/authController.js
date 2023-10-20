@@ -1,5 +1,11 @@
 const UserModel = require('../models/user')
-const { hashPassword, comparePassword } = require('../utils/auth')
+const {
+    hashPassword,
+    comparePassword,
+    generateRefreshToken,
+    generateAccessToken,
+    isRefreshTokenExpired
+} = require('../utils/auth')
 const jwt = require('jsonwebtoken')
 
 const test = (req, res) => {
@@ -42,17 +48,20 @@ const loginUser = async (req, res) => {
             })
         }
 
-        if (match) {
-            jwt.sign(
-                { id: user._id, email: user.email },
-                process.env.JWT_SECRET,
-                {},
-                (err, token) => {
-                    if (err) throw err
+        const payload = { id: user._id, email: user.email }
 
-                    res.cookie('token', token).json(user)
-                }
-            )
+        if (match) {
+            const token = jwt.sign(payload, process.env.JWT_SECRET, {
+                expiresIn: process.env.ACCESS_TOKEN_EXPIRATION
+            })
+
+            const data = {
+                user,
+                accessToken: token,
+                refreshToken: generateRefreshToken(payload)
+            }
+            // const newUserData = [user].map((item) => ({ ...item, token: token }))
+            return res.json(data)
         }
     } catch (error) {
         return res.json({
@@ -108,16 +117,32 @@ const logoutUser = async (req, res) => {
     res.json(null)
 }
 
-const profile = (req, res) => {
-    const { token } = req.cookies
-    if (token) {
-        jwt.verify(token, process.env.JWT_SECRET, {}, (err, user) => {
-            if (err) throw err
-            res.json(user)
-        })
-    } else {
-        res.json(null)
+const refreshToken = async (req, res) => {
+    const expiredAccessToken = req.header('Authorization')
+    const refreshToken = req.body.refreshToken
+
+    if (!expiredAccessToken || !refreshToken) {
+        return res.status(400).json({ message: 'Access token and refresh token are required.' })
     }
+
+    // return unauthorized if refresh token is expired, thus, user must login again to gain new acces and refresh token
+    const isExpired = await isRefreshTokenExpired(refreshToken)
+    if (isExpired) {
+        return res.status(401).json({ message: 'Unauthorized' })
+    }
+
+    // Verify the refresh token
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: 'Refresh token is invalid or expired.' })
+        }
+
+        // Generate a new access token
+        const payload = { id: decoded.id, email: decoded.email }
+        const newAccessToken = generateAccessToken(payload)
+
+        res.json({ accessToken: newAccessToken })
+    })
 }
 
 module.exports = {
@@ -125,5 +150,5 @@ module.exports = {
     registerUser,
     loginUser,
     logoutUser,
-    profile
+    refreshToken
 }

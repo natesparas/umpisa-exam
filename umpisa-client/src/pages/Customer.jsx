@@ -4,17 +4,23 @@ import SweetAlert from 'react-bootstrap-sweetalert'
 import { useState } from 'react'
 import { deleteCustomer } from '../api/Customer'
 import toast from 'react-hot-toast'
+import { useSelector } from 'react-redux'
 
 function Customer(props) {
     const [showAlert, setShowAlert] = useState({})
     const [alerContent, setAlertContent] = useState('')
     const [refresh, setRefresh] = useState(false)
     const [showAddForm, setShowAddForm] = useState(false)
+    const { token, refreshToken } = useSelector((state) => state.user)
 
     // Function to show the alert
     const showDeleteAlert = (data) => {
         setShowAlert(data)
         setAlertContent(data.name)
+    }
+
+    const showToast = (data) => {
+        console.log(data)
     }
 
     // Function to hide the alert
@@ -28,7 +34,7 @@ function Customer(props) {
 
     const handleDelete = async () => {
         try {
-            const result = await deleteCustomer(showAlert.id)
+            const result = await deleteCustomer(showAlert.id, token, refreshToken)
             if (result.deletedCount > 0) {
                 // success
                 toast.success('Successfully deleted!')
@@ -91,6 +97,7 @@ function Customer(props) {
                 <div className="card-body">
                     <div className="table-responsive">
                         <CustomerTable
+                            showToast={showToast}
                             showDeleteAlert={showDeleteAlert}
                             reRender={refresh}
                             showAddForm={showAddForm}

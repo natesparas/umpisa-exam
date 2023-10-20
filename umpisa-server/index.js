@@ -5,7 +5,7 @@ const cors = require('cors')
 const { mongoose } = require('mongoose')
 const cookieParser = require('cookie-parser')
 
-const jwtValidation = require('./src/middlewares/jwtValidation')
+const { jwtValidation } = require('./src/middlewares/jwtValidation')
 
 // database connection
 // mongoose

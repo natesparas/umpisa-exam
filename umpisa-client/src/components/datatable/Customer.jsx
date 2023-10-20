@@ -6,27 +6,31 @@ import './Customer.css'
 import Modalx from '../modal/Modalx'
 import toast from 'react-hot-toast'
 import { getCustomer, createCustomer, updateCustomer } from '../../api/Customer'
+import { useSelector } from 'react-redux'
 
 function Customer({ showDeleteAlert, reRender, showAddForm, modalAddTitle, reShowAddForm }) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [data, setData] = useState([])
     const [rend, setRender] = useState(false)
+    // const dataFetchedRef = useRef(false)
+    // const { token } = useSelector((state) => state.token)
+    const { token, refreshToken } = useSelector((state) => state.user)
+
+    const fetchData = async () => {
+        try {
+            const apiData = await getCustomer(token, refreshToken)
+            setData(apiData)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const apiData = await getCustomer()
-                setData(apiData)
-            } catch (error) {
-                if (error.code == 'ERR_BAD_REQUEST') {
-                    toast.error(error.message)
-                } else {
-                    toast.error(error.message)
-                }
-            }
-        }
+        // if (dataFetchedRef.current) return
+        // dataFetchedRef.current = true
         fetchData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reRender, rend])
 
     const handleDelete = (row) => {
@@ -60,7 +64,6 @@ function Customer({ showDeleteAlert, reRender, showAddForm, modalAddTitle, reSho
     }
 
     const handleInputChange = (newData) => {
-        // console.log(newData)
         setRowData(newData)
     }
 
@@ -126,27 +129,39 @@ function Customer({ showDeleteAlert, reRender, showAddForm, modalAddTitle, reSho
         }
     }
 
+    const showToast = (data) => {
+        console.log(data)
+        if (Object.prototype.hasOwnProperty.call(data, 'error')) {
+            toast.error(data.error)
+        } else {
+            toast.success(data.msg)
+        }
+    }
+
     const handleSubmit = async () => {
         try {
-            let result, msg
+            let result
             if (rowData.add) {
                 // Create customer API
-                result = await createCustomer(rowData)
-                msg = 'Successfully Added!'
+                result = await createCustomer(rowData, token, refreshToken)
+                result.msg = 'Successfully Added!'
             } else {
-                result = await updateCustomer(rowData)
-                msg = 'Successfully updated!'
+                result = await updateCustomer(rowData, token, refreshToken)
+                result.msg = 'Successfully updated!'
             }
 
             if (result.error) {
-                toast.error(result.error)
+                // toast.error(result.error)
+                showToast(result)
             } else {
                 setRender(!rend)
                 closeModal()
-                toast.success(msg)
+                // toast.success(msg)
+                showToast(result)
             }
         } catch (error) {
-            toast.error(error)
+            showToast(error)
+            // toast.error(error)
         }
     }
 

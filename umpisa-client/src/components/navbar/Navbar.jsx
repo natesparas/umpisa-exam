@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Avatar from '../../assets/undraw_profile.svg'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
@@ -12,6 +12,28 @@ function Navbar({ onLogout }) {
     const toggleAvatar = () => {
         setAvatarOpen(!avatarOpen)
     }
+
+    const dropndownRef = useRef(null)
+    const handleClickOutside = (event) => {
+        // Check if the click event target is not the modal or the popup
+        if (dropndownRef.current && !dropndownRef.current.contains(event.target)) {
+            // Close the modal and popup here (e.g., set a state variable to hide them)
+            // For example, you can use state or Redux to control the visibility of modals and popups
+            if (avatarOpen) {
+                toggleAvatar()
+            }
+        }
+    }
+
+    useEffect(() => {
+        // Add a click event listener to the document
+        document.addEventListener('click', handleClickOutside)
+
+        return () => {
+            // Remove the event listener when the component unmounts
+            document.removeEventListener('click', handleClickOutside)
+        }
+    })
 
     return (
         <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
@@ -57,7 +79,10 @@ function Navbar({ onLogout }) {
                 {/* <div className="topbar-divider d-none d-sm-block"></div> */}
 
                 {/* <!-- Nav Item - User Information --> */}
-                <li className={`nav-item dropdown no-arrow ${avatarOpen ? 'show' : ''}`}>
+                <li
+                    className={`nav-item dropdown no-arrow ${avatarOpen ? 'show' : ''}`}
+                    ref={dropndownRef}
+                >
                     <a
                         className="nav-link dropdown-toggle"
                         href="#"
